@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Side Hustle</string>
+    <string name="image_logo">Image Logo</string>
+    <string name="find_your_perfect_part_time_job">Find Your Perfect Part-Time Job!</string>
+    <string name="home">Home</string>
+    <string name="search_for_jobs">Search for jobs</string>
+    <string name="tutoring">Tutoring</string>
+    <string name="freelance">Freelance</string>
+    <string name="internships">Internships</string>
+    <string name="featured_jobs">Featured Jobs</string>
+    <string name="signup_with_google">Sign up with Google</string>
+    <string name="login_with_google">Log in with Google</string>
+    <string name="search_icon">Search</string>
+    <string name="categories">Categories</string>
+    <string name="part_time">Part-time</string>
+    <string name="gigs">Gigs</string>
+    <string name="view_all">View All</string>
+    <string name="search">Search</string>
+    <string name="favorites">Favorites</string>
+    <string name="profile">Profile</string>
+</resources>
