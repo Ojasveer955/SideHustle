@@ -2,18 +2,31 @@ package com.example.sidehustle;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.example.sidehustle.adapter.JobAdapter;
 import com.example.sidehustle.model.Job;
 
+import java.util.ArrayList;
+import java.util.List;
+import androidx.annotation.Nullable;
+
 public class HomeActivity extends AppCompatActivity {
+    private RecyclerView featuredJobsRecyclerView;
+    private JobAdapter jobAdapter;
+    private List<Job> jobList;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,39 +39,46 @@ public class HomeActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                // Handle home action
-                return true;
-            } else if (itemId == R.id.nav_search) {
-                // Handle search action
-                return true;
-            } else if (itemId == R.id.nav_favorites) {
-                // Handle favorites action
-                return true;
-            } else if (itemId == R.id.nav_profile) {
-                // Handle profile action
-                return true;
-            } else {
-                return false;
-            }
+            if (itemId == R.id.nav_home) return true;
+            else if (itemId == R.id.nav_search) return true;
+            else if (itemId == R.id.nav_favorites) return true;
+            else if (itemId == R.id.nav_profile) return true;
+            else return false;
         });
 
-        RecyclerView featuredJobsRecyclerView = findViewById(R.id.featuredJobsRecyclerView);
+        // Initialize RecyclerView
+        featuredJobsRecyclerView = findViewById(R.id.featuredJobsRecyclerView);
         featuredJobsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create sample data
-        List<Job> featuredJobs = new ArrayList<>();
-        featuredJobs.add(new Job("Android Developer", "Google", "Mountain View, CA", "$120k - $150k/year", R.drawable.ic_google));
-        featuredJobs.add(new Job("iOS Developer", "Apple", "Cupertino, CA", "$130k - $160k/year", R.drawable.ic_apple));
-        featuredJobs.add(new Job("Web Developer", "Facebook", "Menlo Park, CA", "$110k - $140k/year", R.drawable.ic_facebook));
-        featuredJobs.add(new Job("UX Designer", "Amazon", "Seattle, WA", "$100k - $130k/year", R.drawable.ic_amazon));
-
-        // Set adapter for the RecyclerView
-        JobAdapter jobAdapter = new JobAdapter(featuredJobs);
+        // Initialize Firebase Firestore
+        db = FirebaseFirestore.getInstance();
+        jobList = new ArrayList<>();
+        jobAdapter = new JobAdapter(this, jobList);
         featuredJobsRecyclerView.setAdapter(jobAdapter);
 
-        // Add this in your Activity's onCreate method
-        Log.d("ResourceCheck", "IC_HOME resource exists: " + 
-            (getResources().getDrawable(R.drawable.ic_home) != null));
+        // Fetch Jobs from Firestore
+        fetchJobsFromFirestore();
+    }
+
+    private void fetchJobsFromFirestore() {
+        CollectionReference jobsRef = db.collection("Jobs");
+
+        jobsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable com.google.firebase.firestore.FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", "Error fetching jobs", error);
+                    Toast.makeText(HomeActivity.this, "Error fetching jobs", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                jobList.clear();
+                for (QueryDocumentSnapshot document : value) {
+                    Job job = document.toObject(Job.class);
+                    jobList.add(job);
+                }
+                jobAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }

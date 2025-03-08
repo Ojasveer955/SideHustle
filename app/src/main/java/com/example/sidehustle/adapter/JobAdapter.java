@@ -1,32 +1,33 @@
 package com.example.sidehustle.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.sidehustle.R;
 import com.example.sidehustle.model.Job;
 
 import java.util.List;
 
 public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
-    
+    private Context context;
     private List<Job> jobs;
-    
-    public JobAdapter(List<Job> jobs) {
+
+    public JobAdapter(Context context, List<Job> jobs) {
+        this.context = context;
         this.jobs = jobs;
     }
 
     @NonNull
     @Override
     public JobViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_featured, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_featured, parent, false);
         return new JobViewHolder(view);
     }
 
@@ -37,7 +38,13 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         holder.companyName.setText(job.getCompany());
         holder.jobLocation.setText(job.getLocation());
         holder.jobSalary.setText(job.getSalary());
-        holder.companyLogo.setImageResource(job.getImageResourceId());
+
+        // Load image from URL using Glide
+        Glide.with(context)
+                .load(job.getImageUrl())  // Load image from Firestore URL
+                .placeholder(R.drawable.placeholder_image) // Add a placeholder image
+                .error(R.drawable.error_image) // Add an error image if the URL is broken
+                .into(holder.companyLogo);
     }
 
     @Override
@@ -47,10 +54,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     static class JobViewHolder extends RecyclerView.ViewHolder {
         ImageView companyLogo;
-        TextView jobTitle;
-        TextView companyName;
-        TextView jobLocation;
-        TextView jobSalary;
+        TextView jobTitle, companyName, jobLocation, jobSalary;
 
         JobViewHolder(View itemView) {
             super(itemView);

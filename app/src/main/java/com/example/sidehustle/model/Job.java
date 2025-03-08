@@ -5,20 +5,23 @@ public class Job {
     private String company;
     private String location;
     private String salary;
-    private int imageResourceId;
+    private String imageUrl; // Changed to String for Firestore image URLs
 
-    public Job(String title, String company, String location, String salary, int imageResourceId) {
+    // Empty constructor required for Firestore
+    public Job() {}
+
+    public Job(String title, String company, String location, String salary, String imageUrl) {
         this.title = title;
         this.company = company;
         this.location = location;
         this.salary = salary;
-        this.imageResourceId = imageResourceId;
+        this.imageUrl = imageUrl;
     }
 
-    // Getters
-    public String getTitle() { return title; }
+    // Getters and setters
+    public String getTitle() { return title; }    
     public String getCompany() { return company; }
     public String getLocation() { return location; }
     public String getSalary() { return salary; }
-    public int getImageResourceId() { return imageResourceId; }
+    public String getImageUrl() { return imageUrl; }
 }
