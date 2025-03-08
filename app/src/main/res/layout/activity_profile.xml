@@ -40,7 +40,7 @@
                 android:id="@+id/user_name"
                 android:layout_width="205dp"
                 android:layout_height="30dp"
-                android:marginStart="16dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/profile_name"
                 android:textColor="@color/black"
                 android:textSize="20sp"
@@ -48,7 +48,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/profile_picture"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.734"
-                app:layout_constraintStart_toEndOf="@id/profile_picture"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/profile_picture"
                 app:layout_constraintVertical_bias="0.52" />
 
@@ -62,7 +62,7 @@
                 app:layout_constraintTop_toBottomOf="@id/profile_picture"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:marginTop="16dp">
+                android:layout_marginTop="16dp">
 
                 <com.google.android.material.tabs.TabItem
                     android:id="@+id/tab_personal_details"
