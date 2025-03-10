@@ -6,13 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -36,8 +34,6 @@ public class HomeActivity extends BaseActivity {
     private JobAdapter jobAdapter;
     private List<Job> jobList;
     private FirebaseFirestore db;
-    private CardView searchBarContainer;
-    private EditText searchBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,23 +72,6 @@ public class HomeActivity extends BaseActivity {
 
         // Fetch Jobs from Firestore
         fetchJobsFromFirestore();
-        
-        // Setup search bar click to navigate to search activity
-        searchBarContainer = findViewById(R.id.searchBarContainer);
-        searchBar = findViewById(R.id.searchBar);
-        
-        View.OnClickListener searchClickListener = v -> {
-            Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
-            startActivity(intent);
-            // No need to finish() here as we want the user to be able to come back
-        };
-        
-        // Apply click listener to both the container and the edit text
-        searchBarContainer.setOnClickListener(searchClickListener);
-        searchBar.setOnClickListener(searchClickListener);
-        // Disable actual editing of the search bar on home screen
-        searchBar.setFocusable(false);
-        searchBar.setClickable(true);
 
         // Initialize the temporary logout button
         Button tempLogoutButton = findViewById(R.id.tempLogoutButton);
@@ -116,8 +95,7 @@ public class HomeActivity extends BaseActivity {
 
         jobsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot value, 
-                    @Nullable com.google.firebase.firestore.FirebaseFirestoreException error) {
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable com.google.firebase.firestore.FirebaseFirestoreException error) {
                 if (error != null) {
                     Log.e("Firestore", "Error fetching jobs", error);
                     Toast.makeText(HomeActivity.this, "Error fetching jobs", Toast.LENGTH_SHORT).show();
@@ -127,8 +105,6 @@ public class HomeActivity extends BaseActivity {
                 jobList.clear();
                 for (QueryDocumentSnapshot document : value) {
                     Job job = document.toObject(Job.class);
-                    // Set the document ID as the job ID
-                    job.setId(document.getId());
                     jobList.add(job);
                 }
                 jobAdapter.notifyDataSetChanged();

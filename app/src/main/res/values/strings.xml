@@ -26,14 +26,4 @@
     <string name="settings">Settings</string>
     <string name="profile_name">User Name</string>
     <string name="welcome_message">Hello, %1$s</string>
-    <string name="job_details">Job Details</string>
-    <string name="company_logo">Company logo</string>
-    <string name="job_description">Job Description</string>
-    <string name="requirements">Requirements</string>
-    <string name="apply_now">Apply Now</string>
-    <string name="save_job">Save Job</string>
-    <string name="clear_search">Clear search</string>
-    <string name="no_search_results">No Results Found</string>
-    <string name="try_different_keywords">Try different keywords or search criteria</string>
-    <string name="type_to_search">Type to search for jobs</string>
 </resources>

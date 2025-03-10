@@ -5,11 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,41 +18,38 @@
             android:id="@+id/companyLogo"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:contentDescription="@string/company_logo" />
+            android:contentDescription="Company logo" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
 
             <TextView
                 android:id="@+id/jobTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/companyName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/jobLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/jobSalary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/primaryColor"
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
