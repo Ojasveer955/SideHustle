@@ -1,5 +1,6 @@
 package com.example.sidehustle;
 
+import android.app.ProgressDialog; // Add this import
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton loginButton, googleLoginButton;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,11 @@ public class LoginActivity extends AppCompatActivity {
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+
+        // Initialize ProgressDialog
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Sending password reset email...");
+        progressDialog.setCancelable(false);
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -56,8 +63,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Set up forgot password and signup navigation
         findViewById(R.id.forgotPassword).setOnClickListener(v -> {
-            // Handle forgot password
-            Toast.makeText(LoginActivity.this, "Forgot password functionality", Toast.LENGTH_SHORT).show();
+            String email = emailInput.getText().toString().trim();
+            sendPasswordResetEmail(email);
         });
 
         findViewById(R.id.signupText).setOnClickListener(v -> {
@@ -133,5 +140,28 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isLoggedIn", true);
         editor.apply();
+    }
+
+    private void sendPasswordResetEmail(String email) {
+        if (email.isEmpty()) {
+            Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressDialog.show();
+
+        mAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener(task -> {
+                progressDialog.dismiss();
+                if (task.isSuccessful()) {
+                    Toast.makeText(LoginActivity.this, "Password reset email sent", Toast.LENGTH_SHORT).show();
+                } else {
+                    String errorMessage = "Error: " + task.getException().getMessage();
+                    if (task.getException() != null) {
+                        errorMessage = task.getException().getMessage();
+                    }
+                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 }

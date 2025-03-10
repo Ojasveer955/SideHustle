@@ -1,7 +1,12 @@
 package com.example.sidehustle;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +14,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import androidx.annotation.Nullable;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
     private RecyclerView featuredJobsRecyclerView;
     private JobAdapter jobAdapter;
     private List<Job> jobList;
@@ -31,20 +38,27 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        // Remove setContentView(R.layout.activity_home); - it's already called in BaseActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        
+        // Hide default title
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) return true;
-            else if (itemId == R.id.nav_search) return true;
-            else if (itemId == R.id.nav_favorites) return true;
-            else if (itemId == R.id.nav_profile) return true;
-            else return false;
-        });
+        // Get current user and set welcome message
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String displayName = currentUser != null ? currentUser.getDisplayName() : "User";
+        if (displayName == null || displayName.isEmpty()) {
+            displayName = "User";
+        }
+
+        // Find and set the custom title
+        TextView toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
+        if (toolbarTitle != null) {
+            toolbarTitle.setText(getString(R.string.welcome_message, displayName));
+        }
 
         // Initialize RecyclerView
         featuredJobsRecyclerView = findViewById(R.id.featuredJobsRecyclerView);
@@ -58,6 +72,22 @@ public class HomeActivity extends AppCompatActivity {
 
         // Fetch Jobs from Firestore
         fetchJobsFromFirestore();
+
+        // Initialize the temporary logout button
+        Button tempLogoutButton = findViewById(R.id.tempLogoutButton);
+        if (tempLogoutButton != null) {
+            tempLogoutButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    logout();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_home;
     }
 
     private void fetchJobsFromFirestore() {
@@ -80,5 +110,19 @@ public class HomeActivity extends AppCompatActivity {
                 jobAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private void logout() {
+        // Clear login state
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isLoggedIn", false);
+        editor.apply();
+
+        // Navigate to LoginActivity
+        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

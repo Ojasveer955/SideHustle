@@ -25,4 +25,5 @@
     <string name="work_experience">Work Experience</string>
     <string name="settings">Settings</string>
     <string name="profile_name">User Name</string>
+    <string name="welcome_message">Hello, %1$s</string>
 </resources>
