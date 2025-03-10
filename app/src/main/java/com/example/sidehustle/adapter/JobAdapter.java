@@ -1,9 +1,11 @@
 package com.example.sidehustle.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,6 +19,7 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.example.sidehustle.JobDetailActivity;
 import com.example.sidehustle.R;
 import com.example.sidehustle.model.Job;
 
@@ -79,6 +82,56 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             Log.w("ImageLoading", "No image URL provided");
             holder.companyLogo.setImageResource(R.drawable.placeholder_image);
         }
+        
+        // Set click listener to open job details
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, JobDetailActivity.class);
+            
+            // Pass job details to the detail activity
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_ID, job.getId());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_TITLE, job.getTitle());
+            intent.putExtra(JobDetailActivity.EXTRA_COMPANY_NAME, job.getCompany());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_LOCATION, job.getLocation());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_SALARY, job.getSalary());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_IMAGE, job.getImageUrl());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_DESCRIPTION, job.getDescription());
+            intent.putExtra(JobDetailActivity.EXTRA_JOB_REQUIREMENTS, job.getRequirements());
+            
+            context.startActivity(intent);
+        });
+
+        // Add these lines for enhanced click feedback
+        holder.itemView.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // Scale down slightly when pressed
+                    v.animate().scaleX(0.98f).scaleY(0.98f).setDuration(100).start();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    // Scale back to normal when released
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                    
+                    // For ACTION_UP (actual click), also navigate to details
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        Intent intent = new Intent(context, JobDetailActivity.class);
+                        
+                        // Pass job details to the detail activity
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_ID, job.getId());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_TITLE, job.getTitle());
+                        intent.putExtra(JobDetailActivity.EXTRA_COMPANY_NAME, job.getCompany());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_LOCATION, job.getLocation());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_SALARY, job.getSalary());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_IMAGE, job.getImageUrl());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_DESCRIPTION, job.getDescription());
+                        intent.putExtra(JobDetailActivity.EXTRA_JOB_REQUIREMENTS, job.getRequirements());
+                        
+                        context.startActivity(intent);
+                    }
+                    break;
+            }
+            return true;
+        });
     }
 
     private String convertDriveUrlToDirectUrl(String driveUrl) {

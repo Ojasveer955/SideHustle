@@ -60,75 +60,12 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <TextView
-        android:id="@+id/categoriesLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/searchBarContainer"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:text="@string/categories"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <HorizontalScrollView
-        android:id="@+id/categoryScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/categoriesLabel"
-        android:layout_marginTop="12dp"
-        android:scrollbars="none">
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/categoryChipGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            app:singleLine="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/category1"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tutoring"
-                android:checked="true" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/category2"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/freelance" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/category3"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/internships" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/category4"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/part_time" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/category5"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/gigs" />
-        </com.google.android.material.chip.ChipGroup>
-    </HorizontalScrollView>
+    <!-- Categories section removed -->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/categoryScrollView"
+        android:layout_below="@id/searchBarContainer"
         android:layout_above="@id/bottomNavigationView"
         android:orientation="vertical">
 
@@ -174,8 +111,7 @@
             android:layout_height="wrap_content"
             android:text="Logout"
             android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:layout_above="@id/bottomNavigationView" />
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
