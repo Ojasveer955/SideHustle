@@ -10,13 +10,14 @@
     <string name="featured_jobs">Featured Jobs</string>
     <string name="signup_with_google">Sign up with Google</string>
     <string name="login_with_google">Log in with Google</string>
-    <string name="search_icon">Search</string>
+    <string name="search_icon">Search Icon</string>
     <string name="categories">Categories</string>
     <string name="part_time">Part-time</string>
     <string name="gigs">Gigs</string>
     <string name="view_all">View All</string>
     <string name="search">Search</string>
     <string name="favorites">Favorites</string>
+    <string name="no_saved_jobs">You haven\'t saved any jobs yet</string>
     <string name="profile">Profile</string>
     <string name="splash_catchphrase">Find flexible jobs that fit your schedule and skills. Start earning on your terms today!</string>
     <string name="profile_picture">Profile Picture</string>
@@ -36,4 +37,5 @@
     <string name="no_search_results">No Results Found</string>
     <string name="try_different_keywords">Try different keywords or search criteria</string>
     <string name="type_to_search">Type to search for jobs</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
 </resources>

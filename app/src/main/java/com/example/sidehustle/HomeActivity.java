@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -38,6 +39,8 @@ public class HomeActivity extends BaseActivity {
     private FirebaseFirestore db;
     private CardView searchBarContainer;
     private EditText searchBar;
+    private TextView viewAllJobs; 
+    private ImageButton logoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,10 @@ public class HomeActivity extends BaseActivity {
             toolbarTitle.setText(getString(R.string.welcome_message, displayName));
         }
 
+        // Initialize logout button
+        logoutButton = toolbar.findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(v -> logout());
+
         // Initialize RecyclerView
         featuredJobsRecyclerView = findViewById(R.id.featuredJobsRecyclerView);
         featuredJobsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -84,7 +91,6 @@ public class HomeActivity extends BaseActivity {
         View.OnClickListener searchClickListener = v -> {
             Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
             startActivity(intent);
-            // No need to finish() here as we want the user to be able to come back
         };
         
         // Apply click listener to both the container and the edit text
@@ -94,16 +100,12 @@ public class HomeActivity extends BaseActivity {
         searchBar.setFocusable(false);
         searchBar.setClickable(true);
 
-        // Initialize the temporary logout button
-        Button tempLogoutButton = findViewById(R.id.tempLogoutButton);
-        if (tempLogoutButton != null) {
-            tempLogoutButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    logout();
-                }
-            });
-        }
+        // Initialize and set up "View all jobs" TextView
+        viewAllJobs = findViewById(R.id.viewAllJobs);
+        viewAllJobs.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, FeaturedJobsActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -113,8 +115,7 @@ public class HomeActivity extends BaseActivity {
 
     private void fetchJobsFromFirestore() {
         CollectionReference jobsRef = db.collection("Jobs");
-
-        jobsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        jobsRef.limit(5).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, 
                     @Nullable com.google.firebase.firestore.FirebaseFirestoreException error) {

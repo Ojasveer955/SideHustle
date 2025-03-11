@@ -4,6 +4,7 @@ import android.app.ProgressDialog; // Add this import
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -77,8 +78,21 @@ public class LoginActivity extends AppCompatActivity {
         String email = emailInput.getText().toString().trim();
         String password = passwordInput.getText().toString().trim();
 
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (email.isEmpty()) {
+            emailInput.setError("Email is required");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailInput.setError("Please enter a valid email");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            passwordInput.setError("Password is required");
+            passwordInput.requestFocus();
             return;
         }
 

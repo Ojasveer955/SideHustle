@@ -3,6 +3,7 @@ package com.example.sidehustle;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,13 +69,45 @@ public class SignupActivity extends AppCompatActivity {
         String password = passwordInput.getText().toString().trim();
         String confirmPassword = confirmPasswordInput.getText().toString().trim();
 
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty()) {
+            nameInput.setError("Name is required");
+            nameInput.requestFocus();
+            return;
+        }
+
+        if (email.isEmpty()) {
+            emailInput.setError("Email is required");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailInput.setError("Please enter a valid email");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            passwordInput.setError("Password is required");
+            passwordInput.requestFocus();
+            return;
+        }
+
+        if (password.length() < 6) {
+            passwordInput.setError("Minimum password length is 6 characters");
+            passwordInput.requestFocus();
+            return;
+        }
+
+        if (confirmPassword.isEmpty()) {
+            confirmPasswordInput.setError("Confirm password is required");
+            confirmPasswordInput.requestFocus();
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            Toast.makeText(this, "Passwords don't match", Toast.LENGTH_SHORT).show();
+            confirmPasswordInput.setError("Passwords don't match");
+            confirmPasswordInput.requestFocus();
             return;
         }
 
@@ -87,7 +120,7 @@ public class SignupActivity extends AppCompatActivity {
                         finish();
                     } else {
                         // Sign up fails
-                        Toast.makeText(SignupActivity.this, "Authentication failed: " + 
+                        Toast.makeText(SignupActivity.this, "Authentication failed: " +
                                 task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -108,7 +141,7 @@ public class SignupActivity extends AppCompatActivity {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
-                Toast.makeText(this, "Google sign in failed: " + e.getMessage(), 
+                Toast.makeText(this, "Google sign in failed: " + e.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
         }
@@ -126,7 +159,7 @@ public class SignupActivity extends AppCompatActivity {
                         finish();
                     } else {
                         // Sign in fails
-                        Toast.makeText(SignupActivity.this, "Authentication failed: " + 
+                        Toast.makeText(SignupActivity.this, "Authentication failed: " +
                                 task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

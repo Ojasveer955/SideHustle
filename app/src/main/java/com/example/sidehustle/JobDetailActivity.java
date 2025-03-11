@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -41,6 +43,7 @@ public class JobDetailActivity extends AppCompatActivity {
     private String jobId;
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
+    private boolean isSavingInProgress = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +52,21 @@ public class JobDetailActivity extends AppCompatActivity {
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser();
+        
+        // Check if authentication token needs refreshing
+        if (currentUser != null) {
+            currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Token refreshed successfully
+                        Log.d(TAG, "Auth token refreshed");
+                    } else {
+                        Log.e(TAG, "Error refreshing auth token", task.getException());
+                    }
+                });
+        }
         
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -149,40 +166,171 @@ public class JobDetailActivity extends AppCompatActivity {
         Button saveButton = findViewById(R.id.saveButton);
         
         applyButton.setOnClickListener(v -> {
-            // TODO: Implement job application logic
             Toast.makeText(this, "Application feature coming soon!", Toast.LENGTH_SHORT).show();
         });
         
         saveButton.setOnClickListener(v -> {
-            if (currentUser != null && jobId != null) {
-                saveJobToFavorites();
-            } else {
-                Toast.makeText(this, "You must be logged in to save jobs", Toast.LENGTH_SHORT).show();
+            // Verify user is authenticated
+            if (currentUser == null) {
+                Toast.makeText(this, "Please sign in to save jobs", Toast.LENGTH_SHORT).show();
+                // Optional: redirect to login
+                // Intent intent = new Intent(this, LoginActivity.class);
+                // startActivity(intent);
+                return;
             }
+            
+            if (jobId == null) {
+                Toast.makeText(this, "Error: Unable to identify job", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            toggleFavoriteStatus(saveButton);
         });
+        
+        // Check if job is already saved to set correct button text
+        if (currentUser != null && jobId != null) {
+            checkIfJobIsSaved(saveButton);
+        } else {
+            // Ensure button shows correct state even when not logged in
+            saveButton.setText(R.string.save_job);
+        }
     }
-    
-    private void saveJobToFavorites() {
+
+    private void checkIfJobIsSaved(Button saveButton) {
         String userId = currentUser.getUid();
         
-        // Create a map for the favorite job entry
-        Map<String, Object> favoriteJob = new HashMap<>();
-        favoriteJob.put("jobId", jobId);
-        favoriteJob.put("timestamp", System.currentTimeMillis());
-        
-        // Add to Firestore
         db.collection("users")
             .document(userId)
             .collection("favoriteJobs")
             .document(jobId)
-            .set(favoriteJob)
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(JobDetailActivity.this, 
-                        "Job saved to favorites", Toast.LENGTH_SHORT).show();
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    saveButton.setText(R.string.remove_from_favorites);
+                } else {
+                    saveButton.setText(R.string.save_job);
+                }
             })
             .addOnFailureListener(e -> {
+                Log.e(TAG, "Error checking if job is saved", e);
+            });
+    }
+
+    private void toggleFavoriteStatus(Button saveButton) {
+        // Prevent duplicate operations
+        if (isSavingInProgress) {
+            return;
+        }
+        
+        isSavingInProgress = true;
+        String userId = currentUser.getUid();
+        
+        db.collection("users")
+            .document(userId)
+            .collection("favoriteJobs")
+            .document(jobId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    // Job is already saved, so remove it
+                    removeJobFromFavorites(saveButton);
+                } else {
+                    // Job is not saved, so add it
+                    saveJobToFavorites(saveButton);
+                }
+            })
+            .addOnFailureListener(e -> {
+                isSavingInProgress = false; // Reset flag on failure
                 Toast.makeText(JobDetailActivity.this, 
-                        "Failed to save job: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+    }
+
+    private void saveJobToFavorites(Button saveButton) {
+        String userId = currentUser.getUid();
+        
+        // Create a map with all job details
+        Map<String, Object> favoriteJob = new HashMap<>();
+        favoriteJob.put("jobId", jobId);
+        favoriteJob.put("timestamp", System.currentTimeMillis());
+        
+        // Get all job details from the intent
+        Intent intent = getIntent();
+        favoriteJob.put("title", intent.getStringExtra(EXTRA_JOB_TITLE));
+        favoriteJob.put("company", intent.getStringExtra(EXTRA_COMPANY_NAME));
+        favoriteJob.put("location", intent.getStringExtra(EXTRA_JOB_LOCATION));
+        favoriteJob.put("salary", intent.getStringExtra(EXTRA_JOB_SALARY));
+        favoriteJob.put("imageUrl", intent.getStringExtra(EXTRA_JOB_IMAGE));
+        favoriteJob.put("description", intent.getStringExtra(EXTRA_JOB_DESCRIPTION));
+        favoriteJob.put("requirements", intent.getStringExtra(EXTRA_JOB_REQUIREMENTS));
+        
+        // Show progress if operation takes long
+        Toast.makeText(JobDetailActivity.this, "Saving job...", Toast.LENGTH_SHORT).show();
+        
+        // Ensure the users collection and document exist first
+        db.collection("users").document(userId).get()
+            .addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.e(TAG, "Error checking user document", task.getException());
+                    Toast.makeText(JobDetailActivity.this, 
+                        "Error saving job: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                // Create user document if it doesn't exist
+                if (!task.getResult().exists()) {
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("uid", userId);
+                    userData.put("email", currentUser.getEmail());
+                    userData.put("createdAt", System.currentTimeMillis());
+                    
+                    db.collection("users").document(userId).set(userData)
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error creating user document", e);
+                            Toast.makeText(JobDetailActivity.this,
+                                "Error creating user profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+                }
+                
+                // Now save the favorite job
+                db.collection("users")
+                    .document(userId)
+                    .collection("favoriteJobs")
+                    .document(jobId)
+                    .set(favoriteJob)
+                    .addOnSuccessListener(aVoid -> {
+                        isSavingInProgress = false; // Reset flag on success
+                        Toast.makeText(JobDetailActivity.this, 
+                                "Job saved to favorites", Toast.LENGTH_SHORT).show();
+                        saveButton.setText(R.string.remove_from_favorites);
+                    })
+                    .addOnFailureListener(e -> {
+                        isSavingInProgress = false; // Reset flag on failure
+                        Log.e(TAG, "Error saving job to favorites", e);
+                        Toast.makeText(JobDetailActivity.this, 
+                                "Failed to save job: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+            });
+    }
+
+    private void removeJobFromFavorites(Button saveButton) {
+        String userId = currentUser.getUid();
+        
+        db.collection("users")
+            .document(userId)
+            .collection("favoriteJobs")
+            .document(jobId)
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                isSavingInProgress = false; // Reset flag on success
+                Toast.makeText(JobDetailActivity.this, 
+                        "Job removed from favorites", Toast.LENGTH_SHORT).show();
+                saveButton.setText(R.string.save_job);
+            })
+            .addOnFailureListener(e -> {
+                isSavingInProgress = false; // Reset flag on failure
+                Toast.makeText(JobDetailActivity.this, 
+                        "Failed to remove job: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             });
     }
     
