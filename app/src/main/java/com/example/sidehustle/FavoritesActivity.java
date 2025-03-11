@@ -1,14 +1,16 @@
 package com.example.sidehustle;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,23 +18,28 @@ import com.example.sidehustle.adapter.JobAdapter;
 import com.example.sidehustle.model.Job;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class FavoritesActivity extends BaseActivity {
     
     private static final String TAG = "FavoritesActivity";
+    private static final String FAVORITES_PREF = "favorite_jobs";
+    
     private RecyclerView favoritesRecyclerView;
     private JobAdapter jobAdapter;
     private List<Job> favoriteJobs;
-    private FirebaseFirestore db;
-    private FirebaseUser currentUser;
     private TextView emptyStateText;
     private ProgressBar progressBar;
+    private SharedPreferences sharedPreferences;
+    private Gson gson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +59,10 @@ public class FavoritesActivity extends BaseActivity {
             toolbarTitle.setText(R.string.favorites);
         }
         
+        // Initialize SharedPreferences and Gson
+        sharedPreferences = getSharedPreferences(FAVORITES_PREF, MODE_PRIVATE);
+        gson = new Gson();
+        
         // Initialize views
         favoritesRecyclerView = findViewById(R.id.favoritesRecyclerView);
         emptyStateText = findViewById(R.id.emptyStateText);
@@ -63,10 +74,6 @@ public class FavoritesActivity extends BaseActivity {
         jobAdapter = new JobAdapter(this, favoriteJobs);
         favoritesRecyclerView.setAdapter(jobAdapter);
         
-        // Initialize Firebase
-        db = FirebaseFirestore.getInstance();
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        
         // Load saved jobs
         loadFavoriteJobs();
     }
@@ -77,52 +84,52 @@ public class FavoritesActivity extends BaseActivity {
     }
     
     private void loadFavoriteJobs() {
-        if (currentUser == null) {
-            showEmptyState("Please sign in to see your favorite jobs");
-            return;
-        }
-        
         progressBar.setVisibility(View.VISIBLE);
         favoriteJobs.clear();
         jobAdapter.notifyDataSetChanged();
         
-        String userId = currentUser.getUid();
-        db.collection("users")
-            .document(userId)
-            .collection("favoriteJobs")
-            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .get()
-            .addOnCompleteListener(task -> {
-                progressBar.setVisibility(View.GONE);
-                
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        // Create a Job object directly from the saved data
-                        Job job = new Job();
-                        job.setId(document.getString("jobId"));
-                        job.setTitle(document.getString("title"));
-                        job.setCompany(document.getString("company"));
-                        job.setLocation(document.getString("location"));
-                        job.setSalary(document.getString("salary"));
-                        job.setImageUrl(document.getString("imageUrl"));
-                        job.setDescription(document.getString("description"));
-                        job.setRequirements(document.getString("requirements"));
-                        
-                        favoriteJobs.add(job);
-                    }
-                    
-                    jobAdapter.notifyDataSetChanged();
-                    
-                    if (favoriteJobs.isEmpty()) {
-                        showEmptyState("No favorite jobs found");
-                    } else {
-                        showJobsList();
-                    }
-                } else {
-                    showEmptyState("Error loading favorite jobs");
-                    Log.d(TAG, "Error getting documents: ", task.getException());
-                }
-            });
+        // Get saved jobs from SharedPreferences
+        String savedJobsJson = sharedPreferences.getString("savedJobs", "");
+        if (savedJobsJson.isEmpty()) {
+            progressBar.setVisibility(View.GONE);
+            showEmptyState(getString(R.string.no_saved_jobs));
+            return;
+        }
+        
+        // Convert JSON to list of maps
+        Type type = new TypeToken<List<Map<String, Object>>>(){}.getType();
+        List<Map<String, Object>> savedJobsMaps = gson.fromJson(savedJobsJson, type);
+        
+        // Sort by timestamp (most recent first)
+        Collections.sort(savedJobsMaps, (job1, job2) -> {
+            Long timestamp1 = Long.parseLong(job1.get("timestamp").toString());
+            Long timestamp2 = Long.parseLong(job2.get("timestamp").toString());
+            return timestamp2.compareTo(timestamp1);
+        });
+        
+        // Convert to Job objects
+        for (Map<String, Object> jobMap : savedJobsMaps) {
+            Job job = new Job();
+            job.setId((String) jobMap.get("jobId"));
+            job.setTitle((String) jobMap.get("title"));
+            job.setCompany((String) jobMap.get("company"));
+            job.setLocation((String) jobMap.get("location"));
+            job.setSalary((String) jobMap.get("salary"));
+            job.setImageUrl((String) jobMap.get("imageUrl"));
+            job.setDescription((String) jobMap.get("description"));
+            job.setRequirements((String) jobMap.get("requirements"));
+            
+            favoriteJobs.add(job);
+        }
+        
+        progressBar.setVisibility(View.GONE);
+        
+        if (favoriteJobs.isEmpty()) {
+            showEmptyState(getString(R.string.no_saved_jobs));
+        } else {
+            jobAdapter.notifyDataSetChanged();
+            showJobsList();
+        }
     }
     
     private void showEmptyState(String message) {
@@ -142,5 +149,25 @@ public class FavoritesActivity extends BaseActivity {
         // Reload favorites when returning to this screen
         // This ensures the list updates if a job was un-favorited from detail view
         loadFavoriteJobs();
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Navigate to HomeActivity instead of just going back
+            Intent intent = new Intent(this, HomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
+    public void onBackPressed() {
+        // Navigate to HomeActivity instead of super.onBackPressed()
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

@@ -30,7 +30,9 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".SearchActivity" 
         android:parentActivityName=".HomeActivity" />
-        <activity android:name=".FavoritesActivity" />
+        <activity 
+            android:name=".FavoritesActivity"
+            android:parentActivityName=".HomeActivity" />
         <activity android:name=".ProfileActivity" android:exported="false" />
         <activity android:name=".JobDetailActivity" android:parentActivityName=".HomeActivity" />
         <activity android:name=".FeaturedJobsActivity" />
