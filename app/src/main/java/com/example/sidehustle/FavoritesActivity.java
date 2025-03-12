@@ -169,5 +169,7 @@ public class FavoritesActivity extends BaseActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        startActivity(intent);
+        finish();
     }
 }
