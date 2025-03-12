@@ -19,6 +19,12 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -115,6 +121,18 @@ public class SignupActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Sign up success
+                        
+                        // Update user profile with display name
+                        mAuth.getCurrentUser().updateProfile(new UserProfileChangeRequest.Builder()
+                                .setDisplayName(name)
+                                .build())
+                                .addOnCompleteListener(profileTask -> {
+                                    if (profileTask.isSuccessful()) {
+                                        // After profile update, create Firestore document
+                                        createUserDocument(name, email);
+                                    }
+                                });
+                        
                         saveLoginState();
                         startActivity(new Intent(SignupActivity.this, HomeActivity.class));
                         finish();
@@ -170,5 +188,36 @@ public class SignupActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isLoggedIn", true);
         editor.apply();
+    }
+
+    // Add this new method to create the user document in Firestore
+    private void createUserDocument(String name, String email) {
+        if (mAuth.getCurrentUser() == null) return;
+        
+        // Create basic user data
+        Map<String, Object> userData = new HashMap<>();
+        
+        // Personal details
+        Map<String, Object> personal = new HashMap<>();
+        personal.put("name", name);
+        personal.put("email", email);
+        personal.put("phone", "");
+        
+        userData.put("Personal", personal);
+        userData.put("Skills", new ArrayList<String>());
+        
+        // Add empty experiences array
+        userData.put("Experiences", new ArrayList<>());
+        
+        // Save to Firestore
+        FirebaseFirestore.getInstance().collection("Users")
+            .document(mAuth.getCurrentUser().getUid())
+            .set(userData)
+            .addOnSuccessListener(aVoid -> {
+                // Document saved successfully
+            })
+            .addOnFailureListener(e -> {
+                // Log error but don't bother user as they're already redirected
+            });
     }
 }
