@@ -1,39 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:layout_height="match_parent">
 
+    <!-- Added Toolbar/Header -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:elevation="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/profile"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Updated constraint to be below toolbar -->
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar"
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:elevation="1dp">
+        app:elevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="32dp"
-            android:paddingBottom="16dp">
+            android:padding="16dp">
 
-            <!-- Profile Picture with improved sizing and shadow -->
+            <!-- Profile Picture with elegant styling -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/profile_picture"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:src="@drawable/ic_profile_placeholder"
                 android:contentDescription="@string/profile_picture"
-                android:scaleType="centerCrop"
-                app:shapeAppearanceOverlay="@style/CircularImageView"
-                app:strokeColor="@color/primaryColor"
-                app:strokeWidth="2dp"
                 android:elevation="4dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/profile_placeholder"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:shapeAppearanceOverlay="@style/CircularImageView"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="2dp" />
 
             <!-- User Name with better positioning -->
             <TextView
@@ -42,34 +65,31 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="16dp"
+                android:ellipsize="end"
+                android:maxLines="2"
                 android:text="@string/profile_name"
-                android:textColor="@color/black"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:maxLines="2"
-                android:ellipsize="end"
-                app:layout_constraintStart_toEndOf="@id/profile_picture"
+                app:layout_constraintBottom_toBottomOf="@id/profile_picture"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/profile_picture"
-                app:layout_constraintBottom_toBottomOf="@id/profile_picture"/>
+                app:layout_constraintStart_toEndOf="@id/profile_picture"
+                app:layout_constraintTop_toTopOf="@id/profile_picture" />
 
-            <!-- Improved TabLayout with better spacing -->
+            <!-- Tab Layout - CHANGED ID from profile_tabs to tab_layout -->
             <com.google.android.material.tabs.TabLayout
-                android:id="@+id/profile_tabs"
+                android:id="@+id/tab_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:background="@android:color/transparent"
                 app:layout_constraintTop_toBottomOf="@id/profile_picture"
                 app:tabGravity="fill"
-                app:tabIndicatorColor="@color/primaryColor"
+                app:tabIndicatorColor="@color/primary"
                 app:tabIndicatorHeight="3dp"
                 app:tabMaxWidth="0dp"
                 app:tabMode="scrollable"
-                app:tabSelectedTextColor="@color/primaryColor"
-                app:tabTextAppearance="@style/CustomTabText"
-                app:tabTextColor="@color/gray"
-                tools:layout_editor_absoluteX="-120dp">
+                app:tabSelectedTextColor="@color/primary"
+                app:tabTextAppearance="@style/CustomTabText">
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
@@ -97,23 +117,24 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ViewPager to hold tab content -->
+    <!-- ViewPager - CHANGED ID from viewpager to view_pager -->
     <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewpager"
+        android:id="@+id/view_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
-
-    <!-- Bottom Navigation View -->
+    <!-- Add Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:background="@android:color/white"
-        android:elevation="8dp"
-        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
+        app:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -150,4 +150,11 @@ public class HomeActivity extends BaseActivity {
         startActivity(intent);
         finish();
     }
+
+    // When launching ProfileActivity from HomeActivity
+    private void openProfileActivity() {
+        Intent intent = new Intent(this, ProfileActivity.class);
+        intent.putExtra("source", "home");
+        startActivity(intent);
+    }
 }

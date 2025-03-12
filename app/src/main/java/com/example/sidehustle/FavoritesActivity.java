@@ -1,5 +1,6 @@
 package com.example.sidehustle;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import android.annotation.SuppressLint;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -163,12 +165,12 @@ public class FavoritesActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
     
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
-        // Navigate to HomeActivity instead of super.onBackPressed()
+        // Navigate to HomeActivity instead of calling super.onBackPressed()
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
         startActivity(intent);
         finish();
     }

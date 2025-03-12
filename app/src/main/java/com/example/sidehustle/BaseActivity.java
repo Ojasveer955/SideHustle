@@ -11,8 +11,16 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getLayoutResourceId());
+        // Check if the activity wants to handle its own content view
+        if (!skipSetContentView()) {
+            setContentView(getLayoutResourceId());
+        }
         setupBottomNavigation();
+    }
+
+    // Add this method to allow activities to skip the automatic setContentView
+    protected boolean skipSetContentView() {
+        return false;
     }
 
     protected abstract int getLayoutResourceId();
