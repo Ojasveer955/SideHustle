@@ -9,6 +9,11 @@
     <!-- Add this line to indicate camera is not required -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Storage Permissions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="32" /> <!-- Only needed up to API 32 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- Needed for API 33+ -->
+    <!-- Add READ_MEDIA_VIDEO / READ_MEDIA_AUDIO if you need those -->
 
     <application
         android:allowBackup="true"
@@ -48,5 +53,14 @@
         </activity>
         <activity android:name=".JobDetailActivity" android:parentActivityName=".HomeActivity" />
         <activity android:name=".FeaturedJobsActivity" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>
